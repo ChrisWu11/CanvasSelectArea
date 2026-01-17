@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CanvasSelectArea Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #f6f7fb;
+        color: #1f2937;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+
+      .page {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+      }
+
+      .panel {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .panel h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+
+      .panel p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .group label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+        cursor: pointer;
+        background: #111827;
+        color: #ffffff;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      button.secondary {
+        background: #e5e7eb;
+        color: #111827;
+      }
+
+      button.ghost {
+        background: #f3f4f6;
+        color: #111827;
+      }
+
+      button:active {
+        transform: scale(0.97);
+      }
+
+      .input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+      }
+
+      input[type="number"] {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+      }
+
+      .canvas-wrap {
+        position: relative;
+        background: #111827;
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .image-stage {
+        position: relative;
+        display: inline-block;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #0f172a;
+      }
+
+      .image-stage img {
+        display: block;
+        max-width: 100%;
+        border-radius: 12px;
+      }
+
+      .status {
+        font-size: 13px;
+        color: #4b5563;
+      }
+
+      .preview {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .preview img {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 960px) {
+        .page {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="panel">
+        <div>
+          <h1>CanvasSelectArea JS Demo</h1>
+          <p>基于纯 JS 的选区工具演示，支持自由选取、矩形选取、撤销/重做和蒙版导出。</p>
+        </div>
+
+        <div class="group">
+          <label>绘制模式</label>
+          <div class="btn-row">
+            <button id="mode-free">自由选区</button>
+            <button id="mode-rect" class="secondary">矩形选区</button>
+          </div>
+          <span class="status" id="mode-status">当前模式：自由选区</span>
+        </div>
+
+        <div class="group">
+          <label>历史操作</label>
+          <div class="btn-row">
+            <button id="undo" class="ghost">上一步</button>
+            <button id="redo" class="ghost">下一步</button>
+            <button id="clear" class="secondary">清空</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <label>导出蒙版</label>
+          <div class="btn-row">
+            <button id="export">导出 PNG</button>
+            <a id="download" class="badge" href="#" download="mask.png" hidden>下载蒙版</a>
+          </div>
+          <span class="status">导出的蒙版为黑底白选区。</span>
+        </div>
+
+        <div class="group">
+          <label>画布尺寸</label>
+          <div class="input-row">
+            <input id="width" type="number" min="100" step="10" />
+            <input id="height" type="number" min="100" step="10" />
+            <button id="resize" class="ghost">调整</button>
+          </div>
+          <div class="btn-row">
+            <button id="fit" class="secondary">适配图片尺寸</button>
+          </div>
+        </div>
+
+        <div class="group preview">
+          <label>导出预览</label>
+          <img id="preview" alt="导出蒙版预览" />
+        </div>
+      </section>
+
+      <section class="canvas-wrap">
+        <div class="image-stage" id="image-stage">
+          <img id="bgImg" src="https://pub-e18c10c2f4934997a5e0ba386488076e.r2.dev/kunkun.jpg" alt="demo" />
+        </div>
+      </section>
+    </div>
+
+    <script src="./index.js"></script>
+    <script>
+      const bgImg = document.getElementById('bgImg');
+      const modeStatus = document.getElementById('mode-status');
+      const previewImg = document.getElementById('preview');
+      const downloadLink = document.getElementById('download');
+      const widthInput = document.getElementById('width');
+      const heightInput = document.getElementById('height');
+      let canvasSelectArea = null;
+
+      const setStatus = (text) => {
+        modeStatus.textContent = text;
+      };
+
+      const syncSizeInputs = () => {
+        widthInput.value = Math.round(bgImg.offsetWidth);
+        heightInput.value = Math.round(bgImg.offsetHeight);
+      };
+
+      bgImg.onload = () => {
+        canvasSelectArea = new window.CanvasSelectArea({ imgId: 'bgImg' });
+        const stage = document.getElementById('image-stage');
+        stage.appendChild(canvasSelectArea.canvas);
+        syncSizeInputs();
+      };
+
+      document.getElementById('mode-free').addEventListener('click', () => {
+        if (!canvasSelectArea) return;
+        canvasSelectArea.changeDrawModel('free');
+        setStatus('当前模式：自由选区');
+      });
+
+      document.getElementById('mode-rect').addEventListener('click', () => {
+        if (!canvasSelectArea) return;
+        canvasSelectArea.changeDrawModel('rectangle');
+        setStatus('当前模式：矩形选区');
+      });
+
+      document.getElementById('undo').addEventListener('click', () => {
+        canvasSelectArea?.undoLastDraw();
+      });
+
+      document.getElementById('redo').addEventListener('click', () => {
+        canvasSelectArea?.redoNextDraw();
+      });
+
+      document.getElementById('clear').addEventListener('click', () => {
+        canvasSelectArea?.clearAll();
+        previewImg.removeAttribute('src');
+        downloadLink.hidden = true;
+      });
+
+      document.getElementById('export').addEventListener('click', async () => {
+        if (!canvasSelectArea) return;
+        try {
+          const img = await canvasSelectArea.extraction();
+          previewImg.src = img;
+          downloadLink.href = img;
+          downloadLink.hidden = false;
+        } catch (error) {
+          previewImg.removeAttribute('src');
+          downloadLink.hidden = true;
+          alert('当前没有可导出的选区，请先绘制区域。');
+        }
+      });
+
+      document.getElementById('resize').addEventListener('click', () => {
+        if (!canvasSelectArea) return;
+        const width = Number(widthInput.value || bgImg.offsetWidth);
+        const height = Number(heightInput.value || bgImg.offsetHeight);
+        bgImg.style.width = `${width}px`;
+        bgImg.style.height = `${height}px`;
+        canvasSelectArea.reSizeCanvas({ width, height });
+      });
+
+      document.getElementById('fit').addEventListener('click', () => {
+        if (!canvasSelectArea) return;
+        bgImg.style.width = '';
+        bgImg.style.height = '';
+        canvasSelectArea.reSizeCanvas({ width: bgImg.offsetWidth, height: bgImg.offsetHeight });
+        syncSizeInputs();
+      });
+
+      window.addEventListener('resize', () => {
+        if (!canvasSelectArea) return;
+        canvasSelectArea.reSizeCanvas({ width: bgImg.offsetWidth, height: bgImg.offsetHeight });
+        syncSizeInputs();
+      });
+    </script>
+  </body>
+</html>
