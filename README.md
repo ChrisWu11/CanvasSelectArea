@@ -1,24 +1,10 @@
-# 超级牛逼的 Canvas 选区工具
+# Canvas 选区工具
 
 > 支持不规则和矩形选区，自适应，上一步，下一步
 
 > 兼容所有框架
 
 > 导出为黑色底白色内容的蒙版
-
-## JS 版本与 Demo
-
-仓库提供了纯 JavaScript 版本的实现：`index.js`，可直接在浏览器中使用，无需 TypeScript 编译。
-
-同时内置了 GitHub Pages 可直接部署的演示页，位于 `docs/index.html`，其脚本文件为 `docs/index.js`（为了解决 Pages 相对路径问题而复制一份）。
-
-本地预览 Demo：
-
-```bash
-python -m http.server 8000
-```
-
-访问 `http://127.0.0.1:8000/docs/index.html` 查看完整交互演示。
 
 ## 使用说明
 
