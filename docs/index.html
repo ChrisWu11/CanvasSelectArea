@@ -86,6 +86,11 @@
         color: #111827;
       }
 
+      button.secondary.active {
+        background: #2563eb;
+        color: #ffffff;
+      }
+
       button.ghost {
         background: #f3f4f6;
         color: #111827;
@@ -302,13 +307,25 @@
         }
       };
 
+      const renderBlankPreview = () => {
+        const width = Math.max(1, Math.round(bgImg.naturalWidth || bgImg.offsetWidth));
+        const height = Math.max(1, Math.round(bgImg.naturalHeight || bgImg.offsetHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, width, height);
+        livePreview.src = canvas.toDataURL('image/png');
+      };
+
       const updateLivePreview = async () => {
         if (!canvasSelectArea) return;
         try {
           const img = await canvasSelectArea.extraction();
           livePreview.src = img;
         } catch (error) {
-          livePreview.removeAttribute('src');
+          renderBlankPreview();
         }
       };
 
@@ -322,7 +339,7 @@
         stage.appendChild(canvasSelectArea.canvas);
         syncSizeInputs();
         setActiveMode('free');
-        updateLivePreview();
+        renderBlankPreview();
       };
 
       freeBtn.addEventListener('click', () => {
