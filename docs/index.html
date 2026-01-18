@@ -129,6 +129,12 @@
         border-radius: 12px;
       }
 
+      .image-stage canvas {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+      }
+
       .status {
         font-size: 13px;
         color: #4b5563;
@@ -247,6 +253,10 @@
       bgImg.onload = () => {
         canvasSelectArea = new window.CanvasSelectArea({ imgId: 'bgImg' });
         const stage = document.getElementById('image-stage');
+        canvasSelectArea.canvas.style.position = 'absolute';
+        canvasSelectArea.canvas.style.inset = '0';
+        canvasSelectArea.canvas.style.margin = 'auto';
+        canvasSelectArea.canvas.style.pointerEvents = 'none';
         stage.appendChild(canvasSelectArea.canvas);
         syncSizeInputs();
       };
