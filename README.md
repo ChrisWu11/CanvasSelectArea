@@ -1,16 +1,16 @@
-# Canvas 选区工具
+# Canvas Selection Tool
 
-> 支持不规则和矩形选区，自适应，上一步，下一步
+> Supports irregular and rectangular selections, adaptive resizing, undo, and redo.
 
-> 兼容所有框架
+> Compatible with all frameworks.
 
-> 导出为黑色底白色内容的蒙版
+> Export a mask with a black background and white content.
 
-## 使用说明
+## Usage
 
-### 新建实例
+### Create an instance
 
-**在图片加载完后初始化 canvas**
+**Initialize the canvas after the image finishes loading.**
 
 ```vue
 <template>
@@ -23,7 +23,7 @@
 import { CanvasSelectArea } from 'xxxxx'
   export default {
     mounted: {
-      // 在图片加载完后初始化canvas
+      // Initialize the canvas after the image finishes loading
       this.$refs.bgImg.onload = () => {
         this.canvasSelectArea = new CanvasSelectArea({ imgId: 'bgImg' })
       }
@@ -32,40 +32,40 @@ import { CanvasSelectArea } from 'xxxxx'
 </script>
 ```
 
-### 切换模式
+### Switch modes
 
 ```js
-// 自由选取模式
+// Free selection mode
 this.canvasSelectArea.changeDrawModel('free')
 
-// 矩形选取模式
+// Rectangular selection mode
 this.canvasSelectArea.changeDrawModel('rectangle')
 ```
 
-### 上一步，下一步
+### Undo and redo
 
 ```js
-// 上一步
+// Undo
 this.canvasSelectArea.undoLastDraw()
 
-// 下一步
+// Redo
 this.canvasSelectArea.redoNextDraw()
 ```
 
-### 导出图片
+### Export image
 
 ```js
-// 是一个promise，需要等待结果返回
+// Returns a promise; wait for the result
 const img = await this.canvasSelectArea.extraction()
 ```
 
-### 支持自适应
+### Adaptive resizing
 
 ```js
 window.addEventListener('resize', this.handleResize)
 
 handleResize() {
-  // 获取图片的宽度和高度
+  // Get the image width and height
   const imgWidth = this.$refs.bgImg.width
   const imgHeight = this.$refs.bgImg.height
 
