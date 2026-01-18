@@ -221,7 +221,7 @@
           <label>绘制模式</label>
           <div class="btn-row">
             <button id="mode-free">自由选区</button>
-            <button id="mode-rect" class="secondary">矩形选区</button>
+            <button id="mode-rect">矩形选区</button>
           </div>
           <span class="status" id="mode-status">当前模式：自由选区</span>
         </div>
@@ -239,7 +239,6 @@
           <label>导出蒙版</label>
           <div class="btn-row">
             <button id="export">导出 PNG</button>
-            <a id="download" class="badge" href="#" download="mask.png" hidden>下载蒙版</a>
           </div>
           <span class="status">导出的蒙版为黑底白选区。</span>
         </div>
@@ -256,10 +255,6 @@
           </div>
         </div>
 
-        <div class="group preview">
-          <label>导出预览</label>
-          <img id="preview" alt="导出蒙版预览" />
-        </div>
       </section>
 
       <section class="canvas-wrap">
@@ -279,9 +274,9 @@
     <script>
       const bgImg = document.getElementById('bgImg');
       const modeStatus = document.getElementById('mode-status');
-      const previewImg = document.getElementById('preview');
       const livePreview = document.getElementById('live-preview');
-      const downloadLink = document.getElementById('download');
+      const downloadLink = document.createElement('a');
+      downloadLink.download = 'mask.png';
       const widthInput = document.getElementById('width');
       const heightInput = document.getElementById('height');
       const freeBtn = document.getElementById('mode-free');
@@ -368,8 +363,6 @@
 
       document.getElementById('clear').addEventListener('click', () => {
         canvasSelectArea?.clearAll();
-        previewImg.removeAttribute('src');
-        downloadLink.hidden = true;
         updateLivePreview();
       });
 
@@ -377,12 +370,9 @@
         if (!canvasSelectArea) return;
         try {
           const img = await canvasSelectArea.extraction();
-          previewImg.src = img;
           downloadLink.href = img;
-          downloadLink.hidden = false;
+          downloadLink.click();
         } catch (error) {
-          previewImg.removeAttribute('src');
-          downloadLink.hidden = true;
           alert('当前没有可导出的选区，请先绘制区域。');
         }
       });
@@ -415,7 +405,9 @@
 
       document.addEventListener('mouseup', () => {
         if (!canvasSelectArea) return;
-        updateLivePreview();
+        setTimeout(() => {
+          updateLivePreview();
+        }, 0);
       });
     </script>
   </body>
